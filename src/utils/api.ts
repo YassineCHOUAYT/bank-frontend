@@ -40,10 +40,8 @@ const addAuthToken = (config: any) => {
 
 // Ajout des intercepteurs à chaque instance
 [authApi, accountsApi, transactionsApi, notificationsApi].forEach(apiInstance => {
-  // Intercepteur de requête
   apiInstance.interceptors.request.use(addAuthToken);
   
-  // Intercepteur de réponse
   apiInstance.interceptors.response.use(
     response => response,
     error => {
@@ -57,6 +55,7 @@ const addAuthToken = (config: any) => {
 });
 
 // Export des API
+
 export const authAPI = {
   login: (email: string, password: string) =>
     authApi.post('/auth/login', { email, password }),
@@ -65,16 +64,26 @@ export const authAPI = {
 };
 
 export const accountsAPI = {
-  getAccounts: () => accountsApi.get('/accounts'),
-  createAccount: (data: any) => accountsApi.post('/accounts', data),
-  updateAccount: (id: string, data: any) => accountsApi.put(`/accounts/${id}`, data),
-  closeAccount: (id: string) => accountsApi.delete(`/accounts/${id}`),
+  getAccountsByClientId: (clientId: number) =>
+    accountsApi.get(`/accounts/client/${clientId}`),
+
+  createAccount: (data: { clientId: number; accountType: string; initialDeposit: number }) =>
+    accountsApi.post('/accounts', data),
+
+  updateAccount: (id: number, data: { accountType?: string; status?: string }) =>
+    accountsApi.put(`/accounts/${id}`, data),
+
+  closeAccount: (id: number) =>
+    accountsApi.put(`/accounts/${id}/close`),
+
+  updateBalance: (accountNumber: string, amount: number) =>
+    accountsApi.put(`/accounts/${accountNumber}/balance`, { amount }),
 };
 
 export const transactionsAPI = {
   getTransactions: () => transactionsApi.get('/transactions'),
-  transfer: (sourceAccountId: string, destinationAccountId: string, amount: number) =>
-    transactionsApi.post('/transactions', { sourceAccountId, destinationAccountId, amount }),
+  transfer: (amount: number,sourceAccountId: string, destinationAccountId: string) =>
+    transactionsApi.post('/transactions', { amount ,sourceAccountId, destinationAccountId }),
   deposit: (accountId: string, amount: number) =>
     transactionsApi.post('/transactions/depot', { accountId, amount }),
   withdraw: (accountId: string, amount: number) =>
